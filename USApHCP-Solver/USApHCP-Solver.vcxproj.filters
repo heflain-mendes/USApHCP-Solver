@@ -27,7 +27,9 @@
   </ItemGroup>
   <ItemGroup>
     <Library Include="..\..\..\..\..\..\gurobi1200\win64\lib\gurobi_c++md2017.lib" />
-    <Library Include="..\..\..\..\..\..\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\lib\x64_windows_msvc14\stat_mda\cplex2211.lib" />
+    <Library Include="..\..\..\..\..\..\Program Files\IBM\ILOG\CPLEX_Studio2211\cplex\lib\x64_windows_msvc14\stat_mda\cplex2211.lib" />
+    <Library Include="..\..\..\..\..\..\Program Files\IBM\ILOG\CPLEX_Studio2211\cplex\lib\x64_windows_msvc14\stat_mda\ilocplex.lib" />
+    <Library Include="..\..\..\..\..\..\gurobi1200\win64\lib\gurobi120.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exact-method.h">

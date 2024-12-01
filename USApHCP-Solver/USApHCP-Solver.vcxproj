@@ -104,7 +104,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\include;C:\gurobi1200\win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files\IBM\ILOG\CPLEX_Studio2211\cplex\include;C:\gurobi1200\win64\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,8 +133,10 @@
     <ClCompile Include="USApHCP-Solver.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <Library Include="..\..\..\..\..\..\gurobi1200\win64\lib\gurobi120.lib" />
     <Library Include="..\..\..\..\..\..\gurobi1200\win64\lib\gurobi_c++md2017.lib" />
-    <Library Include="..\..\..\..\..\..\Program Files\IBM\ILOG\CPLEX_Studio_Community2211\cplex\lib\x64_windows_msvc14\stat_mda\cplex2211.lib" />
+    <Library Include="..\..\..\..\..\..\Program Files\IBM\ILOG\CPLEX_Studio2211\cplex\lib\x64_windows_msvc14\stat_mda\cplex2211.lib" />
+    <Library Include="..\..\..\..\..\..\Program Files\IBM\ILOG\CPLEX_Studio2211\cplex\lib\x64_windows_msvc14\stat_mda\ilocplex.lib" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="exact-method.h" />

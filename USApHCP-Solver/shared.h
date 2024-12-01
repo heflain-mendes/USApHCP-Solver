@@ -8,15 +8,34 @@ typedef struct
     double y;
 } Coordinate;
 
-
 typedef struct
 {
-    int hubQuantity;
+    int nodeQuantity;
     Coordinate* coordinates;
 } InstanceEntries;
 
-// instances must be in the instances folder
-InstanceEntries readInstance(char* instance);
-double** generateCostMatrix(InstanceEntries instanceEntries);
+enum MethodResoltion {
+    CPLEX,
+    GURIBI,
+    HEURISTIC,
+    META_HEURISTIC
+};
+
+extern MethodResoltion methodResoltion;
+extern char sourceFile[];
+extern char targetFile[];
+extern int hubQuantity;
+extern int showLogs;
+extern double alpha;
+extern InstanceEntries instanceEntries;
+extern double** costMatrix;
+extern double** costAggMatrix;
+
+int readInstance();
+int freeCoordinatesInstance();
+int generateCostMatriz();
+int freeCostMatriz();
+int generateCostAggMatriz();
+int freeCostAggMatriz();
 
 #endif
