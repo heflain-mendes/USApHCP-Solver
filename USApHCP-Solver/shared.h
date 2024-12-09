@@ -16,9 +16,7 @@ typedef struct
 
 enum MethodResoltion {
     CPLEX,
-    GURIBI,
-    HEURISTIC,
-    META_HEURISTIC
+    GUROBI
 };
 
 extern MethodResoltion methodResoltion;

@@ -137,7 +137,7 @@ int generateLpFile()
 }
 
 int cplexSolver(){
-    int status = generateLpFile();
+    int status = generateLpFile(), error;
 
     if (status) {
         printf("Erro ao gerar arquivo lp\n");
@@ -150,18 +150,20 @@ int cplexSolver(){
     double objval;            // Valor da função objetivo
     int num_vars;             // Número de variáveis no modelo
     double* x = NULL;         // Solução das variáveis
-    double start_time, end_time; // Variáveis para medir o tempo
-    char** colname;
-    char* colnamebuf = NULL;
-    int surplus;
+    clock_t start_time, end_time; // Variáveis para medir o tempo
+    double elapsed_time;
     int colspace = 1024; // Espaço inicial do buffer de nomes
+    double lower_bound, upper_bound, obj_val, mip_gap; // saídas do sistema
 
+
+    //Iniciando ambiente CPLEX
     env = CPXopenCPLEX(&status);
     if (env == NULL) {
         printf("Erro ao iniciar o ambiente do CPLEX.\n");
         return status;
     }
 
+    //Criando o problema
     lp = CPXcreateprob(env, &status, "problema");
     if (lp == NULL) {
         printf("Erro ao criar o problema.\n");
@@ -169,127 +171,103 @@ int cplexSolver(){
         return status;
     }
 
-    status = CPXreadcopyprob(env, lp, targetFile, NULL);
-    if (status) {
+    //Lendo instância do arquivo .lp
+    error = CPXreadcopyprob(env, lp, targetFile, NULL);
+    if (error) {
         fprintf(stderr, "Erro ao carregar o arquivo LP.\n");
         CPXfreeprob(env, &lp);
         CPXcloseCPLEX(&env);
         return status;
     }
 
-    status = CPXsetdblparam(env, CPXPARAM_TimeLimit, 3600.0);
-    if (status) {
+    //Definindo o tempo limite de execução
+    error = CPXsetdblparam(env, CPXPARAM_TimeLimit, 3600.0);
+    if (error) {
         printf("Erro ao configurar o limite de tempo.\n");
     }
 
+    //Definindo se o log do CPLEX será ou não mostrado
     if (showLogs) {
-        status = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
-        if (status) {
+        error = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
+        if (error) {
             printf("Erro ao ativar a visualização de execução do CPLEX");
         }
     }
     else {
-        status = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_OFF);
-        if (status) {
+        error = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_OFF);
+        if (error) {
             printf("Erro ao desativar a visualização de execução do CPLEX");
         }
     }
 
+    //Definindo o tipo de problema
     CPXchgprobtype(env, lp, CPXPROB_LP);
 
-    CPXgettime(env, &start_time);
 
-    status = CPXprimopt(env, lp);
-    if (status) {
+    //Obtendo o tempo de inicio do processamento
+    //CPXgettime(env, &start_time);
+    start_time = clock();
+
+    //Otimizando o modelo
+    error = CPXprimopt(env, lp);
+    if (error) {
         fprintf(stderr, "Erro ao otimizar o modelo.\n");
         CPXfreeprob(env, &lp);
         CPXcloseCPLEX(&env);
-        return status;
+        return error;
     }
 
-    CPXgettime(env, &end_time);
+    //Obtendo o tempo final
+    //CPXgettime(env, &end_time);
+    end_time = clock();
+    elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
-    status = CPXgetobjval(env, lp, &objval);
-    if (status) {
+    //obtendo o status da função objetivo
+    status = CPXgetstat(env, lp);
+    printf("Status da solução: %d\n", status);
+
+    //Obtendo valor da função objetivo
+    error = CPXgetobjval(env, lp, &objval);
+    if (error) {
         fprintf(stderr, "Erro ao obter o valor da função objetivo.\n");
     }
     else {
         printf("Valor da função objetivo: %f\n", objval);
     }
 
-    // Recuperar os nomes das variáveis
-    //num_vars = CPXgetnumcols(env, lp);
-    //colname = (char**)malloc(num_vars * sizeof(char*));
-    //colnamebuf = (char*)malloc(colspace * sizeof(char));
-
-    //if (colname == NULL || colnamebuf == NULL) {
-    //    fprintf(stderr, "Erro de alocação de memória.\n");
-    //    free(colname);
-    //    free(colnamebuf);
-    //    CPXfreeprob(env, &lp);
-    //    CPXcloseCPLEX(&env);
-    //    return 1;
-    //}
-
-    //status = CPXgetcolname(env, lp, colname, colnamebuf, colspace, &surplus, 0, num_vars - 1);
-    //if (status == CPXERR_NEGATIVE_SURPLUS) {
-    //    // Realoca buffer caso necessário
-    //    colspace = -surplus;
-    //    free(colnamebuf);
-    //    colnamebuf = (char*)malloc(colspace * sizeof(char));
-    //    status = CPXgetcolname(env, lp, colname, colnamebuf, colspace, &surplus, 0, num_vars - 1);
-    //}
-
-    //x = (double*)malloc(num_vars * sizeof(double));
-    //if (x == NULL) {
-    //    fprintf(stderr, "Erro ao alocar memória.\n");
-    //    CPXfreeprob(env, &lp);
-    //    CPXcloseCPLEX(&env);
-    //    return -1;
-    //}
-
-    //status = CPXgetx(env, lp, x, 0, num_vars - 1);
-    //if (status) {
-    //    fprintf(stderr, "Erro ao obter os valores das variáveis.\n");
-    //}
-    //else {
-    //    printf("Solução:\n");
-    //    for (int i = 0; i < num_vars; i++) {
-    //        printf("%s = %f\n", colname[i], x[i]);
-    //    }
-    //}
-
-    double lower_bound, upper_bound, obj_val, mip_gap;
-
-    status = CPXgetbestobjval(env, lp, &lower_bound);
-    if (status) {
+    //Obtendo o limitante inferior
+    error = CPXgetbestobjval(env, lp, &lower_bound);
+    if (error) {
         fprintf(stderr, "Erro ao obter o limitante inferior.\n");
     }
     else {
         printf("Limitante inferior: %f\n", lower_bound);
     }
 
-    status = CPXgetmipobjval(env, lp, &upper_bound);
-    if (status) {
+    //Obtendo o limitante superior
+    error = CPXgetmipobjval(env, lp, &upper_bound);
+    if (error) {
         fprintf(stderr, "Erro ao obter o limitante superior.\n");
     }
     else {
         printf("Limitante superior: %f\n", upper_bound);
     }
 
-    status = CPXgetmiprelgap(env, lp, &mip_gap);
-    if (status) {
+
+    //Obtendo o gap
+    error = CPXgetmiprelgap(env, lp, &mip_gap);
+    if (error) {
         fprintf(stderr, "Erro ao obter o gap relativo.\n");
     }
     else {
         printf("Gap relativo: %f%%\n", mip_gap * 100);
     }
 
-    printf("Tempo total de execução: %f segundos\n", end_time - start_time);
+    //Obtendo o tempo total para encontrar a solução
+    printf("Tempo total de execução: %.2f segundos\n", elapsed_time);
 
+    //limpando memória
     free(x);
-    //free(colname);
-    free(colnamebuf);
     CPXfreeprob(env, &lp);
     CPXcloseCPLEX(&env);
 
@@ -311,123 +289,91 @@ int gurobiSolver() {
     int numvars;            // Número de variáveis no modelo
     double* sol;            // Valores das variáveis
     char** varnames;        // Nomes das variáveis
-    double objbound;        // Limitante inferior ou superior
+    double lower_bound, upper_bound;        // Limitante inferior ou superior
     double mipgap;          // Gap da solução
+    clock_t start_time, end_time; //Calculo do tempo
+    double elapsed_time;
 
     // Inicializar o ambiente
     error = GRBloadenv(&env, "gurobi.log");
     if (error) {
-        printf("Error: %s\n", GRBgeterrormsg(env));
+        printf("Error ao inicializar o ambiente");
         return 1;
     }
 
     // Carregar o modelo a partir do arquivo .lp
     error = GRBreadmodel(env, targetFile, &model);
     if (error) {
-        printf("Error: %s\n", GRBgeterrormsg(env));
+        printf("Error ao carregar o arquivo lp");
         return 1;
     }
 
     // Definir o limite de tempo (1 hora = 3600 segundos)
     error = GRBsetdblparam(env, GRB_DBL_PAR_TIMELIMIT, 3);
     if (error) {
-        printf("Error: %s\n", GRBgeterrormsg(env));
+        printf("Error ao definir o tempo limite de execução");
         return 1;
     }
 
     // Registrar o tempo inicial
-    clock_t start_time = clock();
+    start_time = clock();
 
     // Otimizar o modelo
     error = GRBoptimize(model);
     if (error) {
-        printf("Error: %s\n", GRBgeterrormsg(env));
+        printf("Error ao otimizar o modelo");
         return 1;
     }
 
     // Registrar o tempo final
-    clock_t end_time = clock();
-    double elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
+    end_time = clock();
+    elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
     // Obter o status da solução
     error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &status);
     if (error) {
-        printf("Error: %s\n", GRBgeterrormsg(env));
+        printf("Error ao obter o status da solução");
         return 1;
     }
+    printf("Status da solução: %d\n", status);
 
-    printf("Time to solve: %.2f seconds\n", elapsed_time);
-
-    if (status == GRB_OPTIMAL || status == GRB_TIME_LIMIT) {
-        // Obter o valor da função objetivo
-        error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
-        if (!error) {
-            printf("Optimal objective value: %f\n", objval);
-        }
-
-        // Obter os limitantes e o gap
-        GRBgetdblattr(model, GRB_DBL_ATTR_OBJBOUND, &objbound);
-        GRBgetdblattr(model, GRB_DBL_ATTR_MIPGAP, &mipgap);
-        printf("Objective bound: %f\n", objbound);
-        printf("MIP gap: %f\n", mipgap);
-
-        // Obter o número de variáveis no modelo
-        error = GRBgetintattr(model, GRB_INT_ATTR_NUMVARS, &numvars);
-        if (error) {
-            printf("Error: %s\n", GRBgeterrormsg(env));
-            return 1;
-        }
-
-        // Alocar memória para valores e nomes das variáveis
-        sol = (double*)malloc(numvars * sizeof(double));
-        varnames = (char**)malloc(numvars * sizeof(char*));
-        for (int i = 0; i < numvars; i++) {
-            varnames[i] = (char*)malloc(100 * sizeof(char)); // Buffer para o nome
-        }
-
-        if (sol == NULL || varnames == NULL) {
-            printf("Memory allocation error.\n");
-            return 1;
-        }
-
-        // Obter os valores das variáveis
-        error = GRBgetdblattrarray(model, GRB_DBL_ATTR_X, 0, numvars, sol);
-        if (error) {
-            printf("Error: %s\n", GRBgeterrormsg(env));
-            free(sol);
-            for (int i = 0; i < numvars; i++) free(varnames[i]);
-            free(varnames);
-            return 1;
-        }
-
-        // Obter os nomes das variáveis
-        error = GRBgetstrattrarray(model, GRB_STR_ATTR_VARNAME, 0, numvars, varnames);
-        if (error) {
-            printf("Error: %s\n", GRBgeterrormsg(env));
-            free(sol);
-            for (int i = 0; i < numvars; i++) free(varnames[i]);
-            free(varnames);
-            return 1;
-        }
-
-        // Imprimir os valores das variáveis
-        /*printf("Variable values:\n");
-        for (int i = 0; i < numvars; i++) {
-            printf("%s = %f\n", varnames[i], sol[i]);
-        }*/
-
-        if (varnames) {
-            //for (int i = 0; i < numvars; i++) {
-            //    if (varnames[i]) free(varnames[i]); // Libera cada ponteiro individual
-            //}
-            free(varnames); // Libera o array de ponteiros
-        }
-
-        free(sol);
+    // Obter o valor da função objetivo
+    error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
+    if (error) {
+        fprintf(stderr, "Erro ao obter o valor da função objetivo.\n");
     }
     else {
-        printf("No optimal solution found. Status: %d\n", status);
+        printf("Valor da função objetivo: %f\n", objval);
     }
+
+    // Obter os limitante inferior
+    error = GRBgetdblattr(model, GRB_DBL_ATTR_LB, &lower_bound);
+    if (error) {
+        fprintf(stderr, "Erro ao obter o limitante inferior.\n");
+    }
+    else {
+        printf("Limitante inferior: %f\n", lower_bound);
+    }
+
+    //Obtendo limite superior
+    error = GRBgetdblattr(model, GRB_DBL_ATTR_UB, &upper_bound);
+    if (error) {
+        fprintf(stderr, "Erro ao obter o limitante superior.\n");
+    }
+    else {
+        printf("Limitante superior: %f\n", lower_bound);
+    }
+
+    //Obtendo o gap
+    error = GRBgetdblattr(model, GRB_DBL_ATTR_MIPGAP, &mipgap);
+    if (error) {
+        fprintf(stderr, "Erro ao obter o gap relativo.\n");
+    }
+    else {
+        printf("Gap relativo: %f%%\n", mipgap * 100);
+    }
+
+    printf("Tempo total de execução: %.2f segundos\n", elapsed_time);
 
     GRBfreemodel(model);
     GRBfreeenv(env);

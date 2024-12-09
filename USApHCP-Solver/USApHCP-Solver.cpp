@@ -8,9 +8,9 @@
 #include "shared.h"
 #include "exact-method.h"
 
-MethodResoltion methodResoltion = CPLEX;
-char sourceFile[] = "instances/inst5.txt";
-char targetFile[] = "interactive-optimizers/inst5.lp";
+MethodResoltion methodResoltion = GUROBI;
+char sourceFile[] = "instances/inst200.txt";
+char targetFile[] = "interactive-optimizers/inst200.lp";
 int hubQuantity = 1;
 int showLogs = 0;
 double alpha = 0.75;
@@ -25,7 +25,7 @@ int main()
     case CPLEX:
         cplexSolver();
         break;
-    case GURIBI:
+    case GUROBI:
         gurobiSolver();
         break;
     }
