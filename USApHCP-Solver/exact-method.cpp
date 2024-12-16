@@ -137,11 +137,15 @@ int generateLpFile()
 }
 
 int cplexSolver(){
-    int status = generateLpFile(), error;
+    int status, error;
 
-    if (status) {
-        printf("Erro ao gerar arquivo lp\n");
-        return status;
+    if (toGenerateLpFile) {
+        status = generateLpFile();
+
+        if (status) {
+            printf("Erro ao gerar arquivo lp\n");
+            return status;
+        }
     }
 
     // Declaração de variáveis
@@ -201,7 +205,7 @@ int cplexSolver(){
     }
 
     //Definindo o tipo de problema
-    CPXchgprobtype(env, lp, CPXPROB_LP);
+    CPXchgprobtype(env, lp, CPXPROB_MILP);
 
 
     //Obtendo o tempo de inicio do processamento
@@ -209,7 +213,7 @@ int cplexSolver(){
     start_time = clock();
 
     //Otimizando o modelo
-    error = CPXprimopt(env, lp);
+    error = CPXmipopt(env, lp);
     if (error) {
         fprintf(stderr, "Erro ao otimizar o modelo.\n");
         CPXfreeprob(env, &lp);
@@ -245,7 +249,7 @@ int cplexSolver(){
     }
 
     //Obtendo o limitante superior
-    error = CPXgetmipobjval(env, lp, &upper_bound);
+    error = CPXgetobjval(env, lp, &upper_bound);
     if (error) {
         fprintf(stderr, "Erro ao obter o limitante superior.\n");
     }
@@ -275,11 +279,15 @@ int cplexSolver(){
 }
 
 int gurobiSolver() {
-    int status = generateLpFile();
+    int status;
 
-    if (status) {
-        printf("Erro ao gerar arquivo lp\n");
-        return status;
+    if (toGenerateLpFile) {
+        status = generateLpFile();
+
+        if (status) {
+            printf("Erro ao gerar arquivo lp\n");
+            return status;
+        }
     }
 
     GRBenv* env = NULL;     // Ambiente
@@ -289,7 +297,7 @@ int gurobiSolver() {
     int numvars;            // Número de variáveis no modelo
     double* sol;            // Valores das variáveis
     char** varnames;        // Nomes das variáveis
-    double lower_bound, upper_bound;        // Limitante inferior ou superior
+    double lower_bound =0 , upper_bound=0;        // Limitante inferior ou superior
     double mipgap;          // Gap da solução
     clock_t start_time, end_time; //Calculo do tempo
     double elapsed_time;
@@ -346,23 +354,18 @@ int gurobiSolver() {
         printf("Valor da função objetivo: %f\n", objval);
     }
 
-    // Obter os limitante inferior
-    error = GRBgetdblattr(model, GRB_DBL_ATTR_LB, &lower_bound);
+    // Obter o limitante inferior global
+    error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJBOUND, &lower_bound);
     if (error) {
-        fprintf(stderr, "Erro ao obter o limitante inferior.\n");
+        fprintf(stderr, "Erro ao obter o limitante inferior global.\n");
     }
     else {
-        printf("Limitante inferior: %f\n", lower_bound);
+        printf("Limitante inferior global: %f\n", lower_bound);
     }
 
-    //Obtendo limite superior
-    error = GRBgetdblattr(model, GRB_DBL_ATTR_UB, &upper_bound);
-    if (error) {
-        fprintf(stderr, "Erro ao obter o limitante superior.\n");
-    }
-    else {
-        printf("Limitante superior: %f\n", lower_bound);
-    }
+    // Obter o limite superior (igual ao valor da solução viável)
+    upper_bound = objval; // Só é válido se a solução viável foi encontrada
+    printf("Limitante superior global: %f\n", upper_bound);
 
     //Obtendo o gap
     error = GRBgetdblattr(model, GRB_DBL_ATTR_MIPGAP, &mipgap);
