@@ -8,11 +8,11 @@
 #include "shared.h"
 #include "exact-method.h"
 
-int toGenerateLpFile = 0;
+int toGenerateLpFile = 1;
 MethodResoltion methodResoltion = GUROBI;
 char sourceFile[] = "instances/inst200.txt";
 char targetFile[] = "interactive-optimizers/inst200.lp";
-int hubQuantity = 40;
+int hubQuantity = 10;
 int showLogs = 1;
 double alpha = 0.75;
 InstanceEntries instanceEntries;

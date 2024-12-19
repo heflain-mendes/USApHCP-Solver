@@ -56,7 +56,8 @@ int generateLpFile()
 
     // subject
     fprintf(file, "\nSubject To\n");
-    fprintf(file, "- 1.0 z + ");
+    
+    /*fprintf(file, "- 1.0 z + ");
 
     double r;
 
@@ -72,7 +73,7 @@ int generateLpFile()
         }
     }
 
-    fprintf(file, " <= 0\n\n");
+    fprintf(file, " <= 0\n\n");*/
 
     // Cada nó é atendido por apenas um hub
     for (int i = 1; i <= instanceEntries.nodeQuantity; i++)
@@ -114,8 +115,29 @@ int generateLpFile()
     }
     fprintf(file, "= %d\n\n", hubQuantity);
 
+    //raio
+    for (int i = 0; i < instanceEntries.nodeQuantity; i++) {
+        for (int k = 0; k < instanceEntries.nodeQuantity; k++) {
+            fprintf(file, "r_%d - %lf X_%d_%d >= 0\n", k + 1, costMatrix[i][k], i + 1, k + 1);
+        }
+    }
+    fprintf(file, "\n");
+    
+    for (int m = 0; m < instanceEntries.nodeQuantity; m++) {
+        for (int k = 0; k <= m; k++) {
+            fprintf(file, "z - r_%d - r_%d >= %lf\n", k + 1, m + 1, alpha * costMatrix[k][m]);
+        }
+    }
+    fprintf(file, "\n");
 
-    fprintf(file, "Binary\n");
+    //bounds
+    fprintf(file, "BOUNDS\n");
+    for (int k = 0; k < instanceEntries.nodeQuantity; k++) {
+        fprintf(file, "0 <= r_%d <= inf\n", k);
+    }
+
+    //bin
+    fprintf(file, "\nBinary\n");
 
     for (int i = 1; i <= instanceEntries.nodeQuantity; i++)
     {
@@ -236,7 +258,7 @@ int cplexSolver(){
         fprintf(stderr, "Erro ao obter o valor da função objetivo.\n");
     }
     else {
-        printf("Valor da função objetivo: %f\n", objval);
+        printf("Valor da função objetivo: %.1f\n", objval);
     }
 
     //Obtendo o limitante inferior
@@ -245,7 +267,7 @@ int cplexSolver(){
         fprintf(stderr, "Erro ao obter o limitante inferior.\n");
     }
     else {
-        printf("Limitante inferior: %f\n", lower_bound);
+        printf("Limitante inferior: %.1f\n", lower_bound);
     }
 
     //Obtendo o limitante superior
@@ -254,7 +276,7 @@ int cplexSolver(){
         fprintf(stderr, "Erro ao obter o limitante superior.\n");
     }
     else {
-        printf("Limitante superior: %f\n", upper_bound);
+        printf("Limitante superior: %.1f\n", upper_bound);
     }
 
 
@@ -264,7 +286,7 @@ int cplexSolver(){
         fprintf(stderr, "Erro ao obter o gap relativo.\n");
     }
     else {
-        printf("Gap relativo: %f%%\n", mip_gap * 100);
+        printf("Gap relativo: %.2f%%\n", mip_gap * 100);
     }
 
     //Obtendo o tempo total para encontrar a solução
@@ -317,7 +339,7 @@ int gurobiSolver() {
     }
 
     // Definir o limite de tempo (1 hora = 3600 segundos)
-    error = GRBsetdblparam(env, GRB_DBL_PAR_TIMELIMIT, 3);
+    error = GRBsetdblparam(env, GRB_DBL_PAR_TIMELIMIT, 3600);
     if (error) {
         printf("Error ao definir o tempo limite de execução");
         return 1;
@@ -351,7 +373,7 @@ int gurobiSolver() {
         fprintf(stderr, "Erro ao obter o valor da função objetivo.\n");
     }
     else {
-        printf("Valor da função objetivo: %f\n", objval);
+        printf("Valor da função objetivo: %.1f\n", objval);
     }
 
     // Obter o limitante inferior global
@@ -360,12 +382,12 @@ int gurobiSolver() {
         fprintf(stderr, "Erro ao obter o limitante inferior global.\n");
     }
     else {
-        printf("Limitante inferior global: %f\n", lower_bound);
+        printf("Limitante inferior global: %.1f\n", lower_bound);
     }
 
     // Obter o limite superior (igual ao valor da solução viável)
     upper_bound = objval; // Só é válido se a solução viável foi encontrada
-    printf("Limitante superior global: %f\n", upper_bound);
+    printf("Limitante superior global: %.1f\n", upper_bound);
 
     //Obtendo o gap
     error = GRBgetdblattr(model, GRB_DBL_ATTR_MIPGAP, &mipgap);
@@ -373,7 +395,7 @@ int gurobiSolver() {
         fprintf(stderr, "Erro ao obter o gap relativo.\n");
     }
     else {
-        printf("Gap relativo: %f%%\n", mipgap * 100);
+        printf("Gap relativo: %.2f%%\n", mipgap * 100);
     }
 
     printf("Tempo total de execução: %.2f segundos\n", elapsed_time);
