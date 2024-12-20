@@ -10,8 +10,10 @@
 
 int toGenerateLpFile = 1;
 MethodResoltion methodResoltion = GUROBI;
-char sourceFile[] = "instances/inst200.txt";
-char targetFile[] = "interactive-optimizers/inst200.lp";
+char sourceFile[] = "instances/inst20.txt";
+char targetFile[] = "linear_programming/inst20.lp";
+char gurobiSolFile[] = "gurobi_sol/inst20.sol";
+char cplexSolFile[] = "cplex_sol/inst20.sol";
 int hubQuantity = 10;
 int showLogs = 1;
 double alpha = 0.75;

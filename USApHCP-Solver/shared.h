@@ -22,6 +22,8 @@ enum MethodResoltion {
 extern MethodResoltion methodResoltion;
 extern char sourceFile[];
 extern char targetFile[];
+extern char gurobiSolFile[];
+extern char cplexSolFile[];
 extern int hubQuantity;
 extern int showLogs;
 extern double alpha;

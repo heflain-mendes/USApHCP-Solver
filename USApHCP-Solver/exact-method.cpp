@@ -292,6 +292,17 @@ int cplexSolver(){
     //Obtendo o tempo total para encontrar a solução
     printf("Tempo total de execução: %.2f segundos\n", elapsed_time);
 
+    // Salvar a solução em um arquivo
+    status = CPXsolwrite(env, lp, cplexSolFile);
+    if (showLogs) {
+        if (status) {
+            printf("Erro ao salvar a solução: %d\n", status);
+        }
+        else {
+            printf("Solução salva com sucesso em 'solution.sol'\n");
+        }
+    }
+
     //limpando memória
     free(x);
     CPXfreeprob(env, &lp);
@@ -342,6 +353,13 @@ int gurobiSolver() {
     error = GRBsetdblparam(env, GRB_DBL_PAR_TIMELIMIT, 3600);
     if (error) {
         printf("Error ao definir o tempo limite de execução");
+        return 1;
+    }
+
+    // Configurar o gap
+    error = GRBsetdblparam(GRBgetenv(model), GRB_DBL_PAR_MIPGAP, 0.0001);
+    if (error) {
+        printf("Erro ao configurar o gap: %s\n", GRBgeterrormsg(env));
         return 1;
     }
 
@@ -400,6 +418,15 @@ int gurobiSolver() {
 
     printf("Tempo total de execução: %.2f segundos\n", elapsed_time);
 
+    error = GRBwrite(model, gurobiSolFile);
+    if (error) {
+        printf("Erro ao salvar a solução: %s\n", GRBgeterrormsg(env));
+        return 1;
+    }
+    if (showLogs) {
+        printf("Solução salva com sucesso em 'solution.sol'\n");
+    }
+    //limpando memória
     GRBfreemodel(model);
     GRBfreeenv(env);
     return 0;
