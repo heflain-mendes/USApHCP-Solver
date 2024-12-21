@@ -22,20 +22,12 @@ int readInstance()
         return 1;
     }
 
-    if (showLogs) {
-        printf("Arquivo aberto: %s\n", sourceFile);
-    }
-
     // Ler a quantidade de hubs
     if (fscanf(file, "%d", &instanceEntries.nodeQuantity) != 1)
     {
         printf("Erro ao ler a quantidade de hubs no arquivo.\n");
         fclose(file);
         return 1;
-    }
-
-    if (showLogs) {
-        printf("A quantidade de hub: %u\n", instanceEntries.nodeQuantity);
     }
 
     // Alocar memória para as coordenadas
@@ -48,9 +40,6 @@ int readInstance()
         return 1;
     }
 
-    if (showLogs) {
-        printf("Memória alocada: %zu bytes\n", instanceEntries.nodeQuantity * sizeof(Coordinate));
-    }
     // Ler as coordenadas
     for (int i = 0; i < instanceEntries.nodeQuantity; i++)
     {
@@ -61,10 +50,6 @@ int readInstance()
             fclose(file);
             return 1;
         }
-    }
-
-    if (showLogs) {
-        printf("Coordenadas lidas!!!\n");
     }
 
     fclose(file);
@@ -88,10 +73,6 @@ int generateCostMatriz() {
         return 1;
     }
 
-    if (showLogs) {
-        printf("Matriz de custo alocada\n");
-    }
-
     for (int i = 0; i < size; i++) {
         costMatrix[i] = (double*)malloc(size * sizeof(double));
         if (costMatrix[i] == NULL) {
@@ -103,10 +84,6 @@ int generateCostMatriz() {
             free(costMatrix);
             return 1;
         }
-    }
-
-    if (showLogs) {
-        printf("Matriz de custo lida\n");
     }
 
     // Preencher a matriz com os custos (distâncias)
@@ -123,10 +100,6 @@ int generateCostMatriz() {
         }
     }
 
-    if (showLogs) {
-        printf("Matriz de custo preenchida\n");
-    }
-
     return 0;
 }
 
@@ -135,42 +108,6 @@ int freeCostMatriz() {
         free(costMatrix[i]);
     }
     free(costMatrix);
-
-    return 0;
-}
-
-int generateCostAggMatriz() {
-    costAggMatrix = (double**) calloc(sizeof(double*), instanceEntries.nodeQuantity);
-
-    for (int i = 0; i < instanceEntries.nodeQuantity; i++) {
-        costAggMatrix[i] = (double*) calloc(sizeof(double), instanceEntries.nodeQuantity);
-    }
-
-    //preenchendo a matriz de custo agregada
-    for (int i = 0; i < instanceEntries.nodeQuantity; i++)
-    {
-        for (int j = 0; j < instanceEntries.nodeQuantity; j++)
-        {
-            for (int m = 0; m < instanceEntries.nodeQuantity; m++)
-            {
-                for (int k = 0; k < instanceEntries.nodeQuantity; k++)
-                {
-                    costAggMatrix[i][k] += costMatrix[i][k] + alpha * costMatrix[k][m];
-                    costAggMatrix[j][m] += costMatrix[m][j];
-                }
-            }
-        }
-    }
-
-    return 0;
-}
-
-int freeCostAggMatriz() {
-    for (int i = 0; i < instanceEntries.nodeQuantity; i++) {
-        free(costAggMatrix[i]);
-    }
-
-    free(costAggMatrix);
 
     return 0;
 }

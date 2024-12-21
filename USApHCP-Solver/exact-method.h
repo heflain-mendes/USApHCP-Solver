@@ -3,7 +3,8 @@
 
 extern int toGenerateLpFile;
 
-int cplexSolver();
-int gurobiSolver();
+int generateLpFile();
+int cplexSolver(FILE* outputResult);
+int gurobiSolver(FILE* outputResult);
 
 #endif

@@ -14,18 +14,14 @@ typedef struct
     Coordinate* coordinates;
 } InstanceEntries;
 
-enum MethodResoltion {
-    CPLEX,
-    GUROBI
-};
+extern const char* filesNames[];
+extern const int hubsQuantity[];
 
-extern MethodResoltion methodResoltion;
 extern char sourceFile[];
 extern char targetFile[];
 extern char gurobiSolFile[];
 extern char cplexSolFile[];
 extern int hubQuantity;
-extern int showLogs;
 extern double alpha;
 extern InstanceEntries instanceEntries;
 extern double** costMatrix;
@@ -35,7 +31,5 @@ int readInstance();
 int freeCoordinatesInstance();
 int generateCostMatriz();
 int freeCostMatriz();
-int generateCostAggMatriz();
-int freeCostAggMatriz();
 
 #endif
