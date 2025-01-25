@@ -16,10 +16,10 @@ int generateLpFile()
 {
     int status;
     
-    //Lendo inst‚ncia
+    //Lendo inst√¢ncia
     status = readInstance();
     if (status) {
-        printf("Erro ao ler a inst‚ncia\n");
+        printf("Erro ao ler a inst√¢ncia\n");
         return 1;
     }
 
@@ -50,7 +50,7 @@ int generateLpFile()
     //Escrevendo o subject
     fprintf(file, "\nSubject To\n");
 
-    //Escrevendo a restriÁ„o: cada nÛ È atendido por apenas um hub
+    //Escrevendo a restri√ß√£o: cada n√≥ √© atendido por apenas um hub
     for (int i = 1; i <= instanceEntries.nodeQuantity; i++)
     {
         for (int k = 1; k <= instanceEntries.nodeQuantity; k++)
@@ -68,7 +68,7 @@ int generateLpFile()
 
     fprintf(file, "\n");
 
-    //Escrevendo a restriÁ„o: um nÛ sÛ pode ser hub se tiver um outro nÛ alocado a ele
+    //Escrevendo a restri√ß√£o: um n√≥ s√≥ pode ser hub se tiver um outro n√≥ alocado a ele
     for (int i = 1; i <= instanceEntries.nodeQuantity; i++)
     {
         for (int k = 1; k <= instanceEntries.nodeQuantity; k++)
@@ -78,7 +78,7 @@ int generateLpFile()
         fprintf(file, "\n");
     }
 
-    //Escrevendo a restriÁ„o: a soluÁ„o n„o pode ter mais de p nÛ alocados como hub
+    //Escrevendo a restri√ß√£o: a solu√ß√£o n√£o pode ter mais de p n√≥ alocados como hub
     for (int k = 1; k <= instanceEntries.nodeQuantity; k++)
     {
         fprintf(file, "1.0 X_%d_%d ", k, k);
@@ -90,7 +90,7 @@ int generateLpFile()
     }
     fprintf(file, "= %d\n\n", hubQuantity);
 
-    //Escrevendo a restriÁ„o: raio
+    //Escrevendo a restri√ß√£o: raio
     for (int i = 0; i < instanceEntries.nodeQuantity; i++) {
         for (int k = 0; k < instanceEntries.nodeQuantity; k++) {
             fprintf(file, "r_%d - %lf X_%d_%d >= 0\n", k + 1, costMatrix[i][k], i + 1, k + 1);
@@ -129,7 +129,7 @@ int generateLpFile()
     //Fechando o arquivo
     fclose(file);
 
-    //Liberando memÛria
+    //Liberando mem√≥ria
     freeCoordinatesInstance();
     freeCostMatriz();
 
@@ -139,21 +139,21 @@ int generateLpFile()
 
 int cplexSolver(FILE* outputResult){
 
-    //Caso n„o seja passado um arquivo a saÌda ser· impressa na tela
+    //Caso n√£o seja passado um arquivo a sa√≠da ser√° impressa na tela
     if (outputResult == NULL) {
         outputResult = stdout;
     }
 
-    // DeclaraÁ„o de vari·veis
-    int status;     // Vari·vel para armazenar o status dos mÈtodos
+    // Declara√ß√£o de vari√°veis
+    int status;     // Vari√°vel para armazenar o status dos m√©todos
     CPXENVptr env = NULL;     // Ambiente do CPLEX
     CPXLPptr lp = NULL;       // Modelo do problema
-    double objval;            // Valor da funÁ„o objetivo
-    int num_vars;             // N˙mero de vari·veis no modelo
-    clock_t start_time, end_time; // Vari·veis para medir o tempo
+    double objval;            // Valor da fun√ß√£o objetivo
+    int num_vars;             // N√∫mero de vari√°veis no modelo
+    clock_t start_time, end_time; // Vari√°veis para medir o tempo
     double elapsed_time; // Tempo total
-    int colspace = 1024; // EspaÁo inicial do buffer de nomes
-    double lower_bound, upper_bound, obj_val, mip_gap; // saÌdas do sistema
+    int colspace = 1024; // Espa√ßo inicial do buffer de nomes
+    double lower_bound, upper_bound, obj_val, mip_gap; // sa√≠das do sistema
 
 
     //Iniciando ambiente CPLEX
@@ -171,7 +171,7 @@ int cplexSolver(FILE* outputResult){
         return status;
     }
 
-    //Lendo inst‚ncia do arquivo .lp
+    //Lendo inst√¢ncia do arquivo .lp
     status = CPXreadcopyprob(env, lp, targetFile, NULL);
     if (status) {
         fprintf(stderr, "Erro ao carregar o arquivo LP.\n");
@@ -180,7 +180,7 @@ int cplexSolver(FILE* outputResult){
         return status;
     }
 
-    //Definindo o tempo limite de execuÁ„o
+    //Definindo o tempo limite de execu√ß√£o
     status = CPXsetdblparam(env, CPXPARAM_TimeLimit, 3600.0);
     if (status) {
         printf("Erro ao configurar o limite de tempo.\n");
@@ -191,7 +191,7 @@ int cplexSolver(FILE* outputResult){
     //Exibindo o log do CPLEX
     status = CPXsetintparam(env, CPX_PARAM_SCRIND, CPX_ON);
     if (status) {
-        printf("Erro ao ativar a visualizaÁ„o de execuÁ„o do CPLEX");
+        printf("Erro ao ativar a visualiza√ß√£o de execu√ß√£o do CPLEX");
     }
 
     //Definindo o tipo de problema
@@ -213,23 +213,23 @@ int cplexSolver(FILE* outputResult){
     //Obtendo o tempo final
     end_time = clock();
 
-    //Calculando o tempo total da otimizaÁ„o
+    //Calculando o tempo total da otimiza√ß√£o
     elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
-    //imprimindo cabeÁalho
+    //imprimindo cabe√ßalho
     fprintf(outputResult, "CPLEX - node %d hub %d -------\n", instanceEntries.nodeQuantity, hubQuantity);
 
-    //obtendo o status da funÁ„o objetivo
+    //obtendo o status da fun√ß√£o objetivo
     status = CPXgetstat(env, lp);
-    fprintf(outputResult, "Status da soluÁ„o: %d\n", status);
+    fprintf(outputResult, "Status da solu√ß√£o: %d\n", status);
 
-    //Obtendo valor da funÁ„o objetivo
+    //Obtendo valor da fun√ß√£o objetivo
     status = CPXgetobjval(env, lp, &objval);
     if (status) {
-        fprintf(outputResult, "Erro ao obter o valor da funÁ„o objetivo.\n");
+        fprintf(outputResult, "Erro ao obter o valor da fun√ß√£o objetivo.\n");
     }
     else {
-        fprintf(outputResult, "Valor da funÁ„o objetivo: %.1f\n", objval);
+        fprintf(outputResult, "Valor da fun√ß√£o objetivo: %.1f\n", objval);
     }
 
     //Obtendo o limitante inferior
@@ -250,16 +250,16 @@ int cplexSolver(FILE* outputResult){
         fprintf(outputResult, "Gap relativo: %.2f%%\n", mip_gap * 100);
     }
 
-    //Obtendo o tempo total para encontrar a soluÁ„o
-    fprintf(outputResult, "Tempo total de execuÁ„o: %.2f segundos\n", elapsed_time);
+    //Obtendo o tempo total para encontrar a solu√ß√£o
+    fprintf(outputResult, "Tempo total de execu√ß√£o: %.2f segundos\n", elapsed_time);
 
-    //rodapÈ
+    //rodap√©
     fprintf(outputResult, "-----------------------------------------\n\n");
 
-    // Salvar a soluÁ„o em um arquivo
+    // Salvar a solu√ß√£o em um arquivo
     status = CPXsolwrite(env, lp, cplexSolFile);
 
-    //limpando memÛria
+    //limpando mem√≥ria
     CPXfreeprob(env, &lp);
     CPXcloseCPLEX(&env);
 
@@ -269,22 +269,22 @@ int cplexSolver(FILE* outputResult){
 
 int gurobiSolver(FILE* outputResult) {
 
-    //Caso n„o seja passado um arquivo a saÌda ser· impressa na tela
+    //Caso n√£o seja passado um arquivo a sa√≠da ser√° impressa na tela
     if (outputResult == NULL) {
         outputResult = stdout;
     }
 
-    // DeclaraÁ„o de vari·veis
-    int status;     // Vari·vel para armazenar o status dos mÈtodos
+    // Declara√ß√£o de vari√°veis
+    int status;     // Vari√°vel para armazenar o status dos m√©todos
     GRBenv* env = NULL;     // Ambiente
     GRBmodel* model = NULL; // Modelo
-    int error;              // CÛdigo de erro
-    double objval;          // Valor da funÁ„o objetivo
-    int numvars;            // N˙mero de vari·veis no modelo
-    double* sol;            // Valores das vari·veis
-    char** varnames;        // Nomes das vari·veis
+    int error;              // C√≥digo de erro
+    double objval;          // Valor da fun√ß√£o objetivo
+    int numvars;            // N√∫mero de vari√°veis no modelo
+    double* sol;            // Valores das vari√°veis
+    char** varnames;        // Nomes das vari√°veis
     double lower_bound = 0;     // Limitante inferior ou superior
-    double mipgap;          // Gap da soluÁ„o
+    double mipgap;          // Gap da solu√ß√£o
     clock_t start_time, end_time; //Calculo do tempo
     double elapsed_time;
 
@@ -308,7 +308,7 @@ int gurobiSolver(FILE* outputResult) {
     // Definir o limite de tempo (1 hora = 3600 segundos)
     error = GRBsetdblparam(env, GRB_DBL_PAR_TIMELIMIT, 3600);
     if (error) {
-        printf("Error ao definir o tempo limite de execuÁ„o");
+        printf("Error ao definir o tempo limite de execu√ß√£o");
         GRBfreemodel(model);
         GRBfreeenv(env);
         return error;
@@ -336,29 +336,36 @@ int gurobiSolver(FILE* outputResult) {
     end_time = clock();
     elapsed_time = (double)(end_time - start_time) / CLOCKS_PER_SEC;
 
-    //imprimindo cabeÁalho
+    //imprimindo cabe√ßalho
     fprintf(outputResult, "GUROBI - node %d hub %d -------\n", instanceEntries.nodeQuantity, hubQuantity);
 
-    // Obter o status da soluÁ„o
+    // Obter o status da solu√ß√£o
     error = GRBgetintattr(model, GRB_INT_ATTR_STATUS, &status);
     if (error) {
-        fprintf(outputResult, "Error ao obter o status da soluÁ„o");
+        fprintf(outputResult, "Error ao obter o status da solu√ß√£o");
     }
     else {
-        fprintf(outputResult, "Status da soluÁ„o: %d\n", status);
+        fprintf(outputResult, "Status da solu√ß√£o: %d\n", status);
     }
 
-    // Obter o valor da funÁ„o objetivo
+    // Obter o valor da fun√ß√£o objetivo
     error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJVAL, &objval);
     if (error) {
-        fprintf(outputResult, "Erro ao obter o valor da funÁ„o objetivo.\n");
+        fprintf(outputResult, "Erro ao obter o valor da fun√ß√£o objetivo.\n");
     }
     else {
-        fprintf(outputResult, "Valor da funÁ„o objetivo: %.1f\n", objval);
+        fprintf(outputResult, "Valor da fun√ß√£o objetivo: %.1f\n", objval);
     }
 
     // Obter o limitante inferior global
     error = GRBgetdblattr(model, GRB_DBL_ATTR_OBJBOUND, &lower_bound);
+
+    if (error) {
+        fprintf(outputResult, "Erro ao obter o limitante inferior.\n");
+    }
+    else {
+        fprintf(outputResult, "Limitante inferior: %.1f\n", lower_bound);
+    }
 
     //Obtendo o gap
     error = GRBgetdblattr(model, GRB_DBL_ATTR_MIPGAP, &mipgap);
@@ -369,17 +376,17 @@ int gurobiSolver(FILE* outputResult) {
         fprintf(outputResult, "Gap relativo: %.2f%%\n", mipgap * 100);
     }
 
-    fprintf(outputResult, "Tempo total de execuÁ„o: %.2f segundos\n", elapsed_time);
+    fprintf(outputResult, "Tempo total de execu√ß√£o: %.2f segundos\n", elapsed_time);
 
-    //rodapÈ
+    //rodap√©
     fprintf(outputResult, "-----------------------------------------\n\n");
 
     error = GRBwrite(model, gurobiSolFile);
     if (error) {
-        printf("Erro ao salvar a soluÁ„o: %s\n", GRBgeterrormsg(env));
+        printf("Erro ao salvar a solu√ß√£o: %s\n", GRBgeterrormsg(env));
     }
 
-    //limpando memÛria
+    //limpando mem√≥ria
     GRBfreemodel(model);
     GRBfreeenv(env);
     return 0;
